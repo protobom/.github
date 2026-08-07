@@ -1,0 +1,47 @@
+# Miniprow configuration for the protobom repos
+---
+lgtm:
+  self_allow: [puerco]
+  auto_apply: true
+
+approve:
+  allow_author: true
+  auto_apply: true
+
+override:
+  allow: [puerco]  # users who may /override
+
+policy:
+  # Self-action gate. Before miniprow lets a PR author self-approve (/approve or
+  # approve.auto_apply) or self-lgtm (/lgtm or lgtm.auto_apply) their own pull
+  # request, every policy under `self` must pass against the PR head commit. A
+  # genuine second-party /approve or /lgtm always bypasses these policies, and
+  # any evaluation error, missing evidence, or FAIL fails closed. Admins get no
+  # exemption.
+  #
+  # Here we require the head commit to carry a valid gitsign signature 
+  # (the same policy the tagger enforces below) so an author can only self-authorise
+  # a commit they signed. The collector init string is templated just-in-time with
+  # the ${MINIPROW_*} variables and, via the `gitsign:`
+  # moniker, miniprow injects the installation token and the PR's
+  # refs/pull/N/head reference.
+  self:
+    - id: gitsign-commit-signature
+      location:
+        uri: git+https://github.com/carabiner-dev/policies#gitsign/gitsign-commit-signature.hjson
+      identities:
+        - "sigstore::https://accounts.google.com::puerco@carabiner.dev"
+      collectors:
+        - "gitsign:https://github.com/${MINIPROW_BASE_ORG}/${MINIPROW_BASE_REPO}@${MINIPROW_PR_HEAD_COMMIT}"
+
+tagger:
+  enabled: true
+  policies:
+    all:
+      - id: gitsign-commit-signature
+        location:
+          uri: git+https://github.com/carabiner-dev/policies#gitsign/gitsign-commit-signature.hjson
+        identities:
+          - "sigstore::https://accounts.google.com::puerco@carabiner.dev"
+        collectors:
+          - "gitsign:https://github.com/${MINIPROW_BASE_ORG}/${MINIPROW_BASE_REPO}@${MINIPROW_PR_HEAD_COMMIT}"
