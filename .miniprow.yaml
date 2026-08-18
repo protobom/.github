@@ -1,5 +1,17 @@
 # Miniprow configuration for the protobom repos
 ---
+# What each repository's own .miniprow.yaml may change here. Everything this
+# file sets is locked for the repositories (self-approval gate, /override
+# allow-list, release tagging policies); keys it leaves unset are theirs to
+# set. The team grants are opened up so every repository can name its
+# maintainers' GitHub team as approvers/reviewers (adding to, never removing,
+# anything granted here).
+inherit:
+  default: locked
+  keys:
+    owners.teams.approvers: extend
+    owners.teams.reviewers: extend
+
 lgtm:
   self_allow: [puerco]
   auto_apply: true
